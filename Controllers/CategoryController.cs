@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Shop.Data;
 using Shop.Models;
 
 namespace Shop.Controllers
@@ -24,25 +27,54 @@ namespace Shop.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<ActionResult<List<Category>>> Post([FromBody]Category model)
+        public async Task<ActionResult<List<Category>>> Post(
+            [FromBody] Category model,
+            [FromServices] DataContext context
+        )
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(model);
+            try
+            {
+                context.Categories.Add(model);
+                await context.SaveChangesAsync();
+                return Ok(model);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Não foi possível criar a categoria" });
+            }
         }
 
         [HttpPut]
         [Route("{id:int}")]
-        public async Task<ActionResult<List<Category>>> Put(int id, [FromBody]Category model)
+        public async Task<ActionResult<List<Category>>> Put(
+            int id,
+            [FromBody] Category model,
+            [FromServices] DataContext context
+        )
         {
-            if(id != model.Id)
-                return NotFound(new { message = "Categoria não encontrada"});
-            
-            if(!ModelState.IsValid)
+            if (id != model.Id)
+                return NotFound(new { message = "Categoria não encontrada" });
+
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            return Ok(model);
+
+            try
+            {
+                context.Entry<Category>(model).State = EntityState.Modified;
+                await context.SaveChangesAsync();
+                return Ok(model);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return BadRequest(new { message = "Esta categoria já foi atualizada" });
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Não foi possível atualizar categoria"});
+            }
         }
 
         [HttpDelete]
