@@ -28,8 +28,8 @@ namespace Shop.Controllers
             [FromServices] DataContext context
         )
         {
-            var categories = await context.Categories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            return Ok(categories);
+            var category = await context.Categories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return Ok(category);
         }
 
         [HttpPost]
