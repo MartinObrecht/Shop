@@ -13,16 +13,23 @@ namespace Shop.Controllers
     {
         [HttpGet]
         [Route("")]
-        public async Task<ActionResult<List<Category>>> Get()
+        public async Task<ActionResult<List<Category>>> Get(
+            [FromServices] DataContext context
+        )
         {
-            return new List<Category>();
+            var categories = await context.Categories.AsNoTracking().ToListAsync();
+            return Ok(categories);
         }
 
         [HttpGet]
         [Route("{id:int}")]
-        public async Task<ActionResult<Category>> GetById(int id)
+        public async Task<ActionResult<Category>> GetById(
+            int id,
+            [FromServices] DataContext context
+        )
         {
-            return new Category();
+            var categories = await context.Categories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return Ok(categories);
         }
 
         [HttpPost]
@@ -73,7 +80,7 @@ namespace Shop.Controllers
             }
             catch (Exception)
             {
-                return BadRequest(new { message = "Não foi possível atualizar categoria"});
+                return BadRequest(new { message = "Não foi possível atualizar categoria" });
             }
         }
 
@@ -81,22 +88,22 @@ namespace Shop.Controllers
         [Route("{id:int}")]
         public async Task<ActionResult<List<Category>>> Delete(
             int id,
-            [FromServices]DataContext context
+            [FromServices] DataContext context
         )
         {
             var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
             if (category == null)
-                return NotFound(new {message = "Categoria não encontrada"});
+                return NotFound(new { message = "Categoria não encontrada" });
 
             try
             {
                 context.Categories.Remove(category);
                 await context.SaveChangesAsync();
-                return Ok(new {message = "Categoria removida com sucesso"});
+                return Ok(new { message = "Categoria removida com sucesso" });
             }
             catch (Exception)
             {
-                return BadRequest(new {message = "Não foi possível remover a categoria"});
+                return BadRequest(new { message = "Não foi possível remover a categoria" });
             }
         }
     }
