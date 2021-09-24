@@ -11,7 +11,7 @@ using Shop.Services;
 
 namespace Shop.Controllers
 {
-    [Route("users")]
+    [Route("v1/users")]
     public class UserController : Controller
     {
         [HttpPost]
@@ -28,8 +28,10 @@ namespace Shop.Controllers
 
             try
             {
+                model.Role = "employee";
                 context.Users.Add(model);
                 await context.SaveChangesAsync();
+                model.Password = "";
                 return model;
             }
             catch (Exception)
@@ -53,6 +55,7 @@ namespace Shop.Controllers
                 return NotFound(new { message = "Usuário ou senha inválidos" });
 
             var token = TokenService.GenerateToken(user);
+            user.Password = "";
             return new
             {
                 user = user,
